@@ -118,13 +118,20 @@ for each in kl2:
         ylist.append(comparative.index(each))
     except:
         ylist.append("")
-
+num = 0
 for each in plain:
-    
-
-
+    if xlist[num] == " ":
+        cipher.append(" ")
+        num+=1
+    else:
+        x = int(xlist[num])
+        y = int(ylist[num])
+        let = list3[x][y]
+        cipher.append(let)
+        num+=1
 
 f.write(f"{ptl}\n")
 f.write(f"{kl2}\n")
 f.write((f"{xlist}\n"))
 f.write((f"{ylist}\n"))
+f.write((f"{cipher}\n"))
