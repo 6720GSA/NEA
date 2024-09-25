@@ -47,6 +47,24 @@ class Button(pygame.sprite.Sprite):
             if event.type == pygame.MOUSEBUTTONDOWN and hit:
                 self.callback(self)
 
+class Menu1:
+    def __init__(self,):
+        
+        
+    def first(self):
+        sprites.add(Button(pygame.Color('green'),  # Button colour
+                           pygame.Color('red'),  # hover colour
+                           pygame.Rect(20, 100, 200, 200),  # size and location
+                           lambda b: print(f"Button '{b.text}' was clicked"),  # Output
+                           'Hover',  # Button text
+                           pygame.Color('black'), ))  # Border Colour
+
+        sprites.add(Button(pygame.Color('yellow'),
+                           pygame.Color('red'),
+                           pygame.Rect(300, 100, 200, 200),
+                           lambda b: print(f"Click  me again!"),
+                           'Another'))
+
 
 pygame.init()
 clock = pygame.time.Clock()
@@ -71,23 +89,16 @@ screen = pygame.display.set_mode(screen_size)
 # TITLE OF WINDOW
 pygame.display.set_caption("NEA Physics Simulations")
 run = True
-
+count = True
 sprites = pygame.sprite.Group()
-sprites.add(Button(pygame.Color('green'),                               # Button colour
-                   pygame.Color('red'),                                 # hover colour
-                   pygame.Rect(20, 100, 200, 200),                      # size and location
-                   lambda b: print(f"Button '{b.text}' was clicked"),   # Output
-                   'Hover',                                             # Button text
-                   pygame.Color('black'),))                             #Border Colour
-
-sprites.add(Button(pygame.Color('yellow'),
-                   pygame.Color('red'),
-                   pygame.Rect(300, 100, 200, 200),
-                   lambda b: print(f"Click  me again!"),
-                   'Another'))
 
 
 while run == True:
+
+    if stack[0] == 0:
+        if count == True:
+            Menu1.first()
+        
     clock.tick(60)
     events = pygame.event.get()
     for event in events:
