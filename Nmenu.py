@@ -100,14 +100,14 @@ while running:
 
     if current_menu[-1] == 'mode_selection_menu':
 
-        box1 = pygame.draw.rect(screen, blue, box_maker(0.3, tosh + 1, 2.7, 6, False))
+        box1 = pygame.draw.rect(screen, blue, box_maker(1.7, tosh + 1, 2.7, 6, False))
         #box2 = pygame.draw.rect(screen, blue, box_maker(3.65, tosh + 1, 2.7, 6, False))
-        box3 = pygame.draw.rect(screen, blue, box_maker(7, tosh + 1, 2.7, 6, False))
+        box3 = pygame.draw.rect(screen, blue, box_maker(5.3, tosh + 1, 2.7, 6, False))
 
         if is_mouse_over_button(box1):
             pygame.draw.rect(screen, green, box1)  # Highlight when hovered
             if event.type == pygame.MOUSEBUTTONDOWN:
-                current_menu.append('general_simulations_mode')
+                current_menu.append('charge_simulation_mode')
 
         #if is_mouse_over_button(box2):
             #pygame.draw.rect(screen, green, box2)  # Highlight when hovered
@@ -115,9 +115,10 @@ while running:
 
         if is_mouse_over_button(box3):
             pygame.draw.rect(screen, green, box3)  # Highlight when hovered
-            #if event.type == pygame.MOUSEBUTTONDOWN:
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                current_menu.append('mass_simulation_mode')
 
-    if current_menu[-1] == 'general_simulations_mode':
+    if current_menu[-1] == 'charge_simulations_mode':
 
         # Sets up filter part on left hand side
         section1 = pygame.draw.rect(screen, grey, box_maker(section1_x, tosh, section1_w, 8, False))
@@ -131,6 +132,14 @@ while running:
         slider2 = Slider(screen, 0, 50, 600, 40, min=0, max=99, step=0.5,colour=blue,handlecolour=green,)
         slider3 = Slider(screen, 0, 50, 800, 40, min=0, max=99, step=0.5,colour=blue,handlecolour=green,)
         slider4 = Slider(screen, 0, 50, 1000, 40, min=0, max=99, step=0.5,colour=blue,handlecolour=green,)
+# similar to the main algorithm just uses mass instead of charge.
+    if current_menu[-1] == 'mass_simulation_mode':
+        # Sets up filter part on left hand side
+        section1 = pygame.draw.rect(screen, grey, box_maker(section1_x, tosh, section1_w, 8, False))
+
+        # Sets up display for simulation thumbnails
+        section2 = pygame.draw.rect(screen, Lgrey, box_maker(section2_x, tosh, section2_w, 8, False))
+
 
 
 
