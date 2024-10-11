@@ -95,9 +95,9 @@ for char in plain:
 length = len(ptl)
 for each in ptl:
     try:
-        xlist.append(int(comparative.index(each)))
-    except:
-        xlist.append("")
+        xlist.append(comparative.index(each))
+    except ValueError:  # Catch the case where the character is not found
+        xlist.append(-1)
 keyword2 = input("input the second keyword: ")
 for char in keyword2:
     char = char.lower()
@@ -115,27 +115,31 @@ while cont == True:
             break
 for each in kl2:
     try:
-        ylist.append(int(comparative.index(each)))
-    except:
-        ylist.append("")
+        ylist.append(comparative.index(each))
+    except ValueError:  # Catch the case where the character is not found
+        ylist.append(-1)
 num = 0
 f.write(f"{ptl}\n")
 f.write(f"{kl2}\n")
 f.write((f"{xlist}\n"))
 f.write((f"{ylist}\n"))
+print(len(xlist), len(ylist), len(ptl))
 for each in plain:
     if xlist[num] == " ":
         cipher.append(" ")
-        num+=1
+        num += 1
     else:
         x = xlist[num]
         y = ylist[num]
-        print(x)
-        print(y)
-        let = list3([x],[y])
-        cipher.append(let)
-        num+=1
 
+        # Check if x and y are within valid range
+        if x != -1 and y != -1 and 0 <= x < 26 and 0 <= y < 26:
+            let = list3[y][x]  # Access the character correctly
+            cipher.append(let)
+        else:
+            cipher.append('?')  # Append a placeholder for invalid indices
+        
+        num += 1
 
 
 
