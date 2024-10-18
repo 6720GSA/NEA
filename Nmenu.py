@@ -2,6 +2,7 @@ import pygame_widgets
 import pygame
 import time
 from pygame_widgets.slider import Slider
+from pygame_widgets.textbox import TextBox
 # Initialize Pygame
 pygame.init()
 
@@ -50,6 +51,25 @@ def is_mouse_over_button(button_rect):
     mouse_x, mouse_y = pygame.mouse.get_pos()
     return button_rect.collidepoint(mouse_x, mouse_y)
 
+def simulation_screen():
+    # Sets up filter part on left hand side
+    section1 = pygame.draw.rect(screen, grey, box_maker(section1_x, tosh, section1_w, 8, False))
+
+    # Sets up display for simulation thumbnails
+    section2 = pygame.draw.rect(screen, Lgrey, box_maker(section2_x, tosh, section2_w, 8, False))
+
+    # Sets up movable divider on screen
+    divider1 = pygame.draw.rect(screen, black, box_maker(section2_x, tosh, 0.1, 8, False))
+    slider1 = Slider(screen, 200, 200, 200, 40, min=0, max=99, step=0.5, colour=blue, handlecolour=green, )
+    slider2 = Slider(screen, 200, 400, 200, 40, min=0, max=99, step=0.5, colour=blue, handlecolour=green, )
+    slider3 = Slider(screen, 200, 600, 200, 40, min=0, max=99, step=0.5, colour=blue, handlecolour=green, )
+    slider4 = Slider(screen, 200, 800, 200, 40, min=0, max=99, step=0.5, colour=blue, handlecolour=green, )
+    output = TextBox(screen, 475, 200, 50, 50, fontSize=30)
+    pygame.display.update()
+    output.setText(slider1.getValue())
+    output.disable()
+
+
 
 running = True
 current_menu = ['main']
@@ -61,7 +81,8 @@ section2_x, section2_w = section1_w, 10 - section1_w
 
 
 while running:
-    for event in pygame.event.get():
+    events = pygame.event.get()
+    for event in events:
         if event.type == pygame.QUIT:
             running = False
         if event.type == pygame.MOUSEBUTTONDOWN:
@@ -96,6 +117,7 @@ while running:
             pygame.draw.rect(screen, green, login_box)  # Highlight when hovered
             if event.type == pygame.MOUSEBUTTONDOWN:
                 current_menu.append('mode_selection_menu')
+                time.sleep(0.1)
                 back_button = True
 
     if current_menu[-1] == 'mode_selection_menu':
@@ -119,30 +141,12 @@ while running:
                 current_menu.append('mass_simulation_mode')
 
     if current_menu[-1] == 'charge_simulations_mode':
+        go = simulation_screen()
 
-        # Sets up filter part on left hand side
-        section1 = pygame.draw.rect(screen, grey, box_maker(section1_x, tosh, section1_w, 8, False))
 
-        # Sets up display for simulation thumbnails
-        section2 = pygame.draw.rect(screen, Lgrey, box_maker(section2_x, tosh, section2_w, 8, False))
-
-        # Sets up movable devider on screen
-        devider1 = pygame.draw.rect(screen, black, box_maker(section2_x, tosh, 0.1, 8, False))
-        slider1 = Slider(screen, 0, 50, 400, 40, min=0, max=99, step=0.5,colour=blue,handlecolour=green,)
-        slider2 = Slider(screen, 0, 50, 600, 40, min=0, max=99, step=0.5,colour=blue,handlecolour=green,)
-        slider3 = Slider(screen, 0, 50, 800, 40, min=0, max=99, step=0.5,colour=blue,handlecolour=green,)
-        slider4 = Slider(screen, 0, 50, 1000, 40, min=0, max=99, step=0.5,colour=blue,handlecolour=green,)
 # similar to the main algorithm just uses mass instead of charge.
     if current_menu[-1] == 'mass_simulation_mode':
-        # Sets up filter part on left hand side
-        section1 = pygame.draw.rect(screen, grey, box_maker(section1_x, tosh, section1_w, 8, False))
+      go = simulation_screen()
 
-        # Sets up display for simulation thumbnails
-        section2 = pygame.draw.rect(screen, Lgrey, box_maker(section2_x, tosh, section2_w, 8, False))
-
-
-
-
-
-
-    #print(current_menu)
+    pygame_widgets.update(events)
+    pygame.display.update()
