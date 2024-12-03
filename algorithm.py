@@ -1,13 +1,15 @@
-import math
+#https://lampz.tugraz.at/~hadley/physikm/script/waves/wave.en.php
+
+import cmath
 
 class main:
-    def __init__(self, s, u, v, a, t, f, q1, q2, r, m):
+    def __init__(self, s, u, v, a, t, q1, q2, r, m):
         # SUVATS
-        self.s = 0
-        self.u = 0
-        self.v = 0
-        self.a = 0
-        self.t = 0
+        self.s = s
+        self.u = u
+        self.v = v
+        self.a = a
+        self.t = t
         # Coulombs
         self.f = 0
         self.q1 = q1
@@ -20,13 +22,23 @@ class main:
         self.p2x = p2x
         self.p2y = p2y
         self.grad = 1
+        #waves
+        self.amp = 0
+        self.wavnum = 0
+        self.per = 0
+        self.angfreq = 0
+
+class Coulombs(main):
+        def __init__(self, s, u, v, a, t, f, q1, q2, r, m):
+            super().__init__(s, u, v, a, t, f, q1, q2, r, m)
+
 
         def Coulombs(self):
             qt = self.q1 * self.q2
             denom = k * (r ^ 2)
             self.f = qt / denom
 
-        def Nsl(self):
+        def Nsl(self): # newtons second law
             self.a = self.f / self.m
 
         def suvat(self):
@@ -44,7 +56,25 @@ class main:
         def line(self):
             grady = self.p2y - p1y
             gradx = self.p2y - p1y
-            self.grad = gradient = grady / gradx
+            self.grad = grady / gradx
+
+
+class Waves(main):
+    def  __init__(self, amp, wavnum, per, angfreq):
+        super().__init__(amp, wavnum, per, angfreq)
+        self.amp = amp
+        self.wavnum = wavnum
+        self.per = per 
+        self.angfreq = angfreq
+        self.t  = 0
+        self.run = False
+
+    def timer(self):    
+        while self.run == True:
+            
+    def partone(self):
+        print("equation 1")
+
 
 
 p1x = 0
