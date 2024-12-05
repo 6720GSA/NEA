@@ -84,23 +84,46 @@ while running:
         if pos_check(back_button):
             back_button = pygame.draw.rect(screen, orange, rectangle(1, 0.4, 0.25, 0.25,
                                                                      False))  # changes the colour of the back button when hovered
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                current_screen[-1] = "menu"
 
     if current_screen[-1] == "menu":  # defines the polygons on the menu screen
-        chrg_button_points = hexagon(380,350,20)
-        chrg_button = poly_draw(purple,blue,chrg_button_points)
-        chrg_rect = poly_rect(chrg_button_points)
-        mass_button_points = hexagon(580, 670, 20)
-        mass_button = poly_draw(purple,blue,mass_button_points)
+        # Charge Button
+        chrg_button_points = hexagon(380, 350, 10)  #calculates each of the points for the hexagon
+        chrg_button = poly_draw(purple, blue, chrg_button_points)  #draws the hexagon on screen with outline
+        chrg_rect = poly_rect(chrg_button_points)  #creates the rect around the polygon for it to be interactable
+        # Mass Button
+        mass_button_points = hexagon(580, 670, 10)
+        mass_button = poly_draw(purple, blue, mass_button_points)
         mass_rect = poly_rect(mass_button_points)
-        wave_button_points = hexagon(780, 350, 20)
-        wave_button = poly_draw(purple,blue,wave_button_points)
+        # Wave Button
+        wave_button_points = hexagon(780, 350, 10)
+        wave_button = poly_draw(purple, blue, wave_button_points)
         wave_rect = poly_rect(wave_button_points)
 
         if chrg_rect.collidepoint(pygame.mouse.get_pos()):
             chrg_button = poly_draw(orange, blue, chrg_button_points)
-        
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                current_screen[-1] = "charge_sim"
+
         if mass_rect.collidepoint((pygame.mouse.get_pos())):
             mass_button = poly_draw(orange, blue, mass_button_points)
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                current_screen[-1] = "mass_sim"
 
         if wave_rect.collidepoint((pygame.mouse.get_pos())):
             wave_button = poly_draw(orange, blue, wave_button_points)
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                current_screen[-1] = "wave_sim"
+
+    if current_screen[-1] == "charge_sim":
+        sidebar = pygame.draw.rect(screen, red, rectangle(2, 9, 0, 1, False))
+        print(current_screen)
+
+    if current_screen[-1] == "mass_sim":
+        sidebar = pygame.draw.rect(screen, blue, rectangle(2, 9, 0, 1, False))
+        print(current_screen)
+
+    if current_screen[-1] == "wave_sim":
+        sidebar = pygame.draw.rect(screen, green, rectangle(2, 9, 0, 1, False))
+        print(current_screen)
