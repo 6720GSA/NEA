@@ -38,6 +38,13 @@ def poly_draw(colour1, colour2, points, ):
     pygame.draw.polygon(screen, colour1, points, 0)
     pygame.draw.polygon(screen, colour2, points, 4)
 
+def poly_rect(points):
+    min_x = min(points, key=lambda x: x[0])[0]
+    max_x = max(points, key=lambda x: x[0])[0]
+    min_y = min(points, key=lambda x: x[1])[1]
+    max_y = max(points, key=lambda x: x[1])[1]
+    button_rect = pygame.Rect(min_x,min_y,max_x-min_x,max_y-min_y)
+    return(button_rect)
 
 def rectangle(width, height, x, y, centre):
     w = width * swidth / 10
@@ -81,10 +88,19 @@ while running:
     if current_screen[-1] == "menu":  # defines the polygons on the menu screen
         chrg_button_points = hexagon(380,350,20)
         chrg_button = poly_draw(purple,blue,chrg_button_points)
+        chrg_rect = poly_rect(chrg_button_points)
         mass_button_points = hexagon(580, 670, 20)
         mass_button = poly_draw(purple,blue,mass_button_points)
+        mass_rect = poly_rect(mass_button_points)
         wave_button_points = hexagon(780, 350, 20)
         wave_button = poly_draw(purple,blue,wave_button_points)
+        wave_rect = poly_rect(wave_button_points)
 
-        #if pos_check(chrg_button):
-         #   chrg_button = hexagon(380, 350, 20, orange, blue)
+        if chrg_rect.collidepoint(pygame.mouse.get_pos()):
+            chrg_button = poly_draw(orange, blue, chrg_button_points)
+        
+        if mass_rect.collidepoint((pygame.mouse.get_pos())):
+            mass_button = poly_draw(orange, blue, mass_button_points)
+
+        if wave_rect.collidepoint((pygame.mouse.get_pos())):
+            wave_button = poly_draw(orange, blue, wave_button_points)
