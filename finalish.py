@@ -203,12 +203,19 @@ while running:
     if current_screen[-1] == "mass_sim":
         sidebar = pygame.draw.rect(screen, blue, rectangle(2, 9, 0, 1, False))
         print(current_screen)
-        backgrnd2 = pygame.draw.rect(screen, black, rectangle(10, 10, 2, 1, False))
+        backgrnd1 = pygame.draw.rect(screen, black, rectangle(10, 10, 2, 1, False))
+        if backgrnd1.collidepoint(pygame.mouse.get_pos()):
+            mousex, mousey = pygame.mouse.get_pos()
+            print(mousex, mousey)
+
         #instance2 = Coulombs()
 
     if current_screen[-1] == "wave_sim":
         sidebar = pygame.draw.rect(screen, green, rectangle(2, 9, 0, 1, False))
         print(current_screen)
-        backgrnd3 = pygame.draw.rect(screen, black, rectangle(10, 10, 2, 1, False))
+        backgrnd1 = pygame.draw.rect(screen, black, rectangle(10, 10, 2, 1, False))
+        if backgrnd1.collidepoint(pygame.mouse.get_pos()):
+            mousex, mousey = pygame.mouse.get_pos()
+            print(mousex, mousey)
 
         #instance1 = Waves()
