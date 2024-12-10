@@ -1,8 +1,11 @@
-#from algorithm.py import *
 import pygame
 import math
+import pygame_widgets
+from pygame_widgets.slider import Slider
+from pygame_widgets.textbox import TextBox
 
 k = 8.99 * (10 ^ 9)
+pygame.font.init()
 
 
 class Coulombs():
@@ -20,7 +23,9 @@ class Coulombs():
         self.r = r
         # Newton's second law
         self.mass = m
-        # also uses F and a but they are already defined
+        # also uses F and a, but they are already defined
+        self.p1x = 704
+        self.p1y = 504
         self.p2x = 0
         self.p2y = 0
         self.grad = 1
@@ -39,15 +44,15 @@ class Coulombs():
         step3 = step2 * 0.5
         self.s = step1 + step3
 
-    def get_p2x(self):
-        return (self.p2x)
+    def set_p2x(self,mousex):
+        self.p2x = mousex
 
-    def get_p2y(self):
-        return (self.p2y)
+    def set_p2y(self, mousey):
+        self.p2y = mousey
 
     def line(self):
-        grady = self.p2y - p1y
-        gradx = self.p2y - p1y
+        grady = self.p2y - self.p1y
+        gradx = self.p2x - self.p1x
         self.grad = grady / gradx
 
 
@@ -136,7 +141,8 @@ def rectangle(width, height, x, y, centre):
 def pos_check(button):
     return button.collidepoint(pygame.mouse.get_pos())
 
-
+slider = Slider(screen, 2, 3, 30, 10, min=0, max=99, step=1)#
+output = TextBox(screen, 2, 2, 10, 10, fontSize=30)
 
 running = True
 current_screen = ["menu"]
@@ -150,7 +156,7 @@ while running:
             click_x, click_y = event.pos
     pygame.display.update()
     screen.fill(black)
-    if current_screen[-1] != "login":
+    if current_screen[-1] != "login":           # draws the bar at the top of the screen
         header = pygame.draw.rect(screen, dgrey,
                                   rectangle(10, 1, 0, 0, False))  #creates the bar at the top of the screen
         title_box = pygame.draw.rect(screen, grey, rectangle(2, 0.45, 4, 0.25,
@@ -195,9 +201,11 @@ while running:
         sidebar = pygame.draw.rect(screen, red, rectangle(2, 9, 0, 1, False))
         print(current_screen)
         backgrnd1 = pygame.draw.rect(screen, black, rectangle(10, 10, 2, 1, False))
+
         if backgrnd1.collidepoint(pygame.mouse.get_pos()):
             mousex , mousey = pygame.mouse.get_pos()
             print(mousex,mousey)
+
         #instance2 = Coulombs()
 
     if current_screen[-1] == "mass_sim":
@@ -207,7 +215,7 @@ while running:
         if backgrnd1.collidepoint(pygame.mouse.get_pos()):
             mousex, mousey = pygame.mouse.get_pos()
             print(mousex, mousey)
-
+            output.setText(slider.getvalue())
         #instance2 = Coulombs()
 
     if current_screen[-1] == "wave_sim":
