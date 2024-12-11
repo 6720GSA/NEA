@@ -1,3 +1,5 @@
+#https://lampz.tugraz.at/~hadley/physikm/script/waves/wave.en.php
+
 import pygame
 import math
 import pygame_widgets
@@ -9,12 +11,12 @@ pygame.font.init()
 
 
 class Coulombs():
-    def __init__(self, s, u, v, a, t, f, q1, q2, r, m):
-        self.s = s
-        self.u = u
-        self.v = v
-        self.a = a
-        self.t = t
+    def __init__(self, s, u, v, a, t, f, q1, q2, r, ):
+        self.s = 0
+        self.u = 0
+        self.v = 0
+        self.a = 0
+        self.t = 0
         # Coulombs
         self.f = f
         self.q1 = q1
@@ -22,7 +24,7 @@ class Coulombs():
 
         self.r = r
         # Newton's second law
-        self.mass = m
+        self.mass = 1.6*(10**(-16))
         # also uses F and a, but they are already defined
         self.p1x = 704
         self.p1y = 504
@@ -32,17 +34,17 @@ class Coulombs():
 
     def coulombs(self):
         qt = self.q1 * self.q2
-        denom = k * (self.r ^ 2)
+        denom = k * (self.r ** 2)
         self.f = qt / denom
 
     def nsl(self):  # newtons second law
-        self.a = self.f / self.m
+        self.a = self.f / self.mass
 
     def suvat(self):
         step1 = self.u * self.t
-        step2 = self.a * self.t ^ 2
+        step2 = self.a * (self.t ** 2)
         step3 = step2 * 0.5
-        self.s = step1 + step3
+        self.s = self.s + step1 + step3
 
     def set_p2x(self,mousex):
         self.p2x = mousex
@@ -54,6 +56,8 @@ class Coulombs():
         grady = self.p2y - self.p1y
         gradx = self.p2x - self.p1x
         self.grad = grady / gradx
+    
+    
 
 
 class Waves():
@@ -141,11 +145,23 @@ def rectangle(width, height, x, y, centre):
 def pos_check(button):
     return button.collidepoint(pygame.mouse.get_pos())
 
-slider = Slider(screen, 2, 3, 30, 10, min=0, max=99, step=1)#
-output = TextBox(screen, 2, 2, 10, 10, fontSize=30)
+
+slider1 = Slider(screen, 50, 458, 150, 20, min=-100, max=100, step=1)
+output1 = TextBox(screen, 175, 400, 50, 50, fontSize=35)
+slider2 = Slider(screen, 50, 558, 150, 20, min=-100, max=100, step=1)
+output2 = TextBox(screen, 175, 500, 50, 50, fontSize=35)
+slider3 = Slider(screen, 50, 658, 150, 20, min=-100, max=100, step=1)
+output3 = TextBox(screen, 175, 600, 50, 50, fontSize=35)
+output1.disable
+output2.disable
+output3.disable
+
+        
+
 
 running = True
 current_screen = ["menu"]
+
 
 while running:
     events = pygame.event.get()
@@ -154,6 +170,7 @@ while running:
             running = False
         if event.type == pygame.MOUSEBUTTONDOWN:
             click_x, click_y = event.pos
+          
     pygame.display.update()
     screen.fill(black)
     if current_screen[-1] != "login":           # draws the bar at the top of the screen
@@ -167,6 +184,7 @@ while running:
                                                                      False))  # changes the colour of the back button when hovered
             if event.type == pygame.MOUSEBUTTONDOWN:
                 current_screen[-1] = "menu"
+                ran = False
 
     if current_screen[-1] == "menu":  # defines the polygons on the menu screen
         # Charge Button
@@ -205,8 +223,13 @@ while running:
         if backgrnd1.collidepoint(pygame.mouse.get_pos()):
             mousex , mousey = pygame.mouse.get_pos()
             print(mousex,mousey)
-
-        #instance2 = Coulombs()
+        output1.setText(slider1.getValue())
+        slider1.listen(events)
+        output2.setText(slider2.getValue())
+        slider2.listen(events)
+        output3.setText(slider3.getValue())
+        slider3.listen(events)
+        instance2 = Coulombs()
 
     if current_screen[-1] == "mass_sim":
         sidebar = pygame.draw.rect(screen, blue, rectangle(2, 9, 0, 1, False))
@@ -215,7 +238,10 @@ while running:
         if backgrnd1.collidepoint(pygame.mouse.get_pos()):
             mousex, mousey = pygame.mouse.get_pos()
             print(mousex, mousey)
-            output.setText(slider.getvalue())
+
+    
+        
+
         #instance2 = Coulombs()
 
     if current_screen[-1] == "wave_sim":
@@ -226,4 +252,6 @@ while running:
             mousex, mousey = pygame.mouse.get_pos()
             print(mousex, mousey)
 
+    if current_screen[-1] == "mass_sim" or current_screen[-1] == "charge_sim":
+        pygame_widgets.update(events)  
         #instance1 = Waves()
