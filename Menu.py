@@ -1,129 +1,43 @@
-import pygame
+import math
 
-swidth, sheight = 1200, 1000
+class Coulombs():
+    def __init__(self, q1, q2, r, m):
+        # Coulomb's constant
+        self.k = 8.99e9  # in N m^2 / C^2
+        self.q1 = q1  # Charge 1
+        self.q2 = q2  # Charge 2
+        self.r = r  # Initial distance between charges
+        self.m = m  # Mass of the particle
+        
+        # Initial position
+        self.x = r  # X-coordinate on the circle (initially at distance r)
+        self.y = 0  # Y-coordinate on the circle (initially 0)
 
-x_mid = swidth / 2
-y_mid = sheight / 2
-pygame.display.set_caption("Physics simulations")
+    def calculate_force(self):
+        # Calculate force using Coulomb's Law
+        qt = self.q1 * self.q2  # Product of charges
+        denom = self.k * (self.r ** 2)  # Coulomb's constant and squared distance
+        return qt / denom  # Force
 
-screen = pygame.display.set_mode((swidth, sheight))
+    def update_position(self):
+        # Calculate the force
+        force = self.calculate_force()
 
-dgrey = (47, 54, 52)
-grey = (100, 100, 100)
-black = (17, 18, 18)
-white = (255, 255, 255)
-green = (0, 200, 0)
-red = (200, 0, 0)
-background_blue = (0, 5, 86)
-blue = (0, 117, 200)
-orange = (255, 127, 0)
-purple = (76, 0, 153)
+        # If charges are opposite, the particle moves closer (attractive force)
+        if self.q1 * self.q2 < 0:  # Opposite charges (attractive)
+            self.r = self.r - 0.1  # Decrease the radius (move closer)
+        else:  # Same charges (repulsive)
+            self.r = self.r + 0.1  # Increase the radius (move further)
 
+        # Now calculate the new position based on the updated radius
+        self.x = self.r * math.cos(math.radians(45))  # Example angle 45° (could vary)
+        self.y = self.r * math.sin(math.radians(45))  # Example angle 45° (could vary)
 
-def hexagon(x, y, scale):  # creates a hexagonal button
-    multi1 = scale * 10
-    multi2 = scale * 5
-    multi3 = scale * 11
-    p1 = (x + multi1, y + multi2)
-    p2 = (x + multi1, y - multi2)
-    p3 = (x, y - multi3)
-    p4 = (x - multi1, y - multi2)
-    p5 = (x - multi1, y + multi2)
-    p6 = (x, y + multi3)
-    points = [p1, p2, p3, p4, p5, p6]
-    return points
+    def get_position(self):
+        return (self.x, self.y)
 
+# Example usage:
+particle = Coulombs(q1=1e-6, q2=-1e-6, r=10, m=1)
+particle.update_position()  # Update position based on force
 
-def poly_draw(colour1, colour2, points, ):
-    pygame.draw.polygon(screen, colour1, points, 0)
-    pygame.draw.polygon(screen, colour2, points, 4)
-
-def poly_rect(points):
-    min_x = min(points, key=lambda x: x[0])[0]
-    max_x = max(points, key=lambda x: x[0])[0]
-    min_y = min(points, key=lambda x: x[1])[1]
-    max_y = max(points, key=lambda x: x[1])[1]
-    button_rect = pygame.Rect(min_x,min_y,max_x-min_x,max_y-min_y)
-    return(button_rect)
-
-def rectangle(width, height, x, y, centre):
-    w = width * swidth / 10
-    h = height * sheight / 10
-    x = x * swidth / 10
-    y = y * sheight / 10
-    if centre == True:
-        x = x_mid - (w / 2)
-    return (x, y, w, h)
-
-
-def pos_check(button):
-    return button.collidepoint(pygame.mouse.get_pos())
-
-
-#def poly_check(button):
-#   points =
-
-running = True
-current_screen = ["menu"]
-
-while running:
-    events = pygame.event.get()
-    for event in events:
-        if event.type == pygame.QUIT:
-            running = False
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            click_x, click_y = event.pos
-    pygame.display.update()
-    screen.fill(black)
-    if current_screen[-1] != "login":
-        header = pygame.draw.rect(screen, dgrey,
-                                  rectangle(10, 1, 0, 0, False))  #creates the bar at the top of the screen
-        title_box = pygame.draw.rect(screen, grey, rectangle(2, 0.45, 4, 0.25,
-                                                             True))  # creates the title box at the top of the screen
-        back_button = pygame.draw.rect(screen, purple, rectangle(1, 0.4, 0.25, 0.25, False))  # creates the back button
-        if pos_check(back_button):
-            back_button = pygame.draw.rect(screen, orange, rectangle(1, 0.4, 0.25, 0.25,
-                                                                     False))  # changes the colour of the back button when hovered
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                current_screen[-1] = "menu"
-
-    if current_screen[-1] == "menu":  # defines the polygons on the menu screen
-        # Charge Button
-        chrg_button_points = hexagon(380, 350, 10)  #calculates each of the points for the hexagon
-        chrg_button = poly_draw(purple, blue, chrg_button_points)  #draws the hexagon on screen with outline
-        chrg_rect = poly_rect(chrg_button_points)  #creates the rect around the polygon for it to be interactable
-        # Mass Button
-        mass_button_points = hexagon(580, 670, 10)
-        mass_button = poly_draw(purple, blue, mass_button_points)
-        mass_rect = poly_rect(mass_button_points)
-        # Wave Button
-        wave_button_points = hexagon(780, 350, 10)
-        wave_button = poly_draw(purple, blue, wave_button_points)
-        wave_rect = poly_rect(wave_button_points)
-
-        if chrg_rect.collidepoint(pygame.mouse.get_pos()):
-            chrg_button = poly_draw(orange, blue, chrg_button_points)
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                current_screen[-1] = "charge_sim"
-
-        if mass_rect.collidepoint((pygame.mouse.get_pos())):
-            mass_button = poly_draw(orange, blue, mass_button_points)
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                current_screen[-1] = "mass_sim"
-
-        if wave_rect.collidepoint((pygame.mouse.get_pos())):
-            wave_button = poly_draw(orange, blue, wave_button_points)
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                current_screen[-1] = "wave_sim"
-
-    if current_screen[-1] == "charge_sim":
-        sidebar = pygame.draw.rect(screen, red, rectangle(2, 9, 0, 1, False))
-        print(current_screen)
-
-    if current_screen[-1] == "mass_sim":
-        sidebar = pygame.draw.rect(screen, blue, rectangle(2, 9, 0, 1, False))
-        print(current_screen)
-
-    if current_screen[-1] == "wave_sim":
-        sidebar = pygame.draw.rect(screen, green, rectangle(2, 9, 0, 1, False))
-        print(current_screen)
+print(particle.get_position())  # Get the new position of the particle
