@@ -59,25 +59,34 @@ class Coulombs():
 
 
 class Waves():
-    def __init__(self, amp, wavnum, phase, angfreq, x):
+    def __init__(self, amp, wavnum, phase, angfreq):
         self.amp = amp
         self.wavnum = wavnum
         self.phase = phase
         self.angfreq = angfreq
-        self.time = 0
-        self.run = False
-        self.p4 = 0
-        self.x = x
+        self.time = 0.1
+        self.points = []
 
-    def timer(self):
-        while self.run == True:
-            self.time += 0.1
 
-    def equation(self):
-        p1 = self.wavnum * self.x
+
+    def equation(self,x):
+        p1 = self.wavnum * x
         p2 = self.angfreq * self.time
         p3 = p1 - p2 + self.phase
-        self.p4 = self.amp * math.cos(p3)
+        y = self.amp * math.cos(p3)
+        self.time += 0.1
+        return(y)
+
+    def wave_points(self):
+        points = []
+        for each in range(240,1199):
+            y = Waves.equation(self,each)
+            points.append((each,y))
+        return points
+
+    def wave_draw(self):
+        points = Waves.wave_points(self)
+        pygame.draw.lines(screen,white,False,points)
 
 
 swidth, sheight = 1200, 1000
@@ -141,20 +150,18 @@ def rectangle(width, height, x, y, centre):
 def pos_check(button):
     return button.collidepoint(pygame.mouse.get_pos())
 
+def draw_slider(screen,x,y,width,height,min,max,step):
+    slider = Slider(screen, x, y, width, height, min= min, max=max, step=step)
+    return(slider)
 
-slider1 = Slider(screen, 50, 458, 150, 20, min=-100, max=100, step=1)
-output1 = TextBox(screen, 175, 400, 50, 50, fontSize=35)
-slider2 = Slider(screen, 50, 558, 150, 20, min=-100, max=100, step=1)
-output2 = TextBox(screen, 175, 500, 50, 50, fontSize=35)
-slider3 = Slider(screen, 50, 658, 150, 20, min=-100, max=100, step=1)
-output3 = TextBox(screen, 175, 600, 50, 50, fontSize=35)
-output1.disable
-output2.disable
-output3.disable
+def draw_output(screen,x,y,width,height):
+    output = TextBox(screen, x, y, width, height, fontSize=35)
+    output.disable()
+    return(output)
 
 running = True
 current_screen = ["menu"]
-clicked = False
+clicked = True
 
 while running:
     events = pygame.event.get()
@@ -176,11 +183,12 @@ while running:
         if pos_check(back_button):
             back_button = pygame.draw.rect(screen, orange, rectangle(1, 0.4, 0.25, 0.25,False))
             # changes the colour of the back button when hovered
-            if event.type == pygame.MOUSEBUTTONDOWN and clicked == False:
+            if event.type == pygame.MOUSEBUTTONDOWN and current_screen[-1] != "menu":
                 current_screen.pop()
                 print(current_screen)
 
     if current_screen[-1] == "menu":  # defines the polygons on the menu screen
+        going = True
         # Charge Button
         chrg_button_points = hexagon(380, 350, 20)  # calculates each of the points for the hexagon
         chrg_button = poly_draw(purple, blue, chrg_button_points)  # draws the hexagon on screen with outline
@@ -217,13 +225,13 @@ while running:
         if backgrnd1.collidepoint(pygame.mouse.get_pos()):
             mousex, mousey = pygame.mouse.get_pos()
             print(mousex, mousey)
-        output1.setText(slider1.getValue())
-        slider1.listen(events)
-        output2.setText(slider2.getValue())
-        slider2.listen(events)
-        output3.setText(slider3.getValue())
-        slider3.listen(events)
-        instance1 = Coulombs()
+        #output1.setText(slider1.getValue())
+        #slider1.listen(events)
+        #output2.setText(slider2.getValue())
+        #slider2.listen(events)
+        #output3.setText(slider3.getValue())
+        #slider3.listen(events)
+        #instance1 = Coulombs(slider1.getValue(),slider2.getValue(),slider3.getValue())
 
     if current_screen[-1] == "mass_sim":
         sidebar = pygame.draw.rect(screen, blue, rectangle(2, 9, 0, 1, False))
@@ -232,7 +240,10 @@ while running:
         if backgrnd1.collidepoint(pygame.mouse.get_pos()):
             mousex, mousey = pygame.mouse.get_pos()
             print(mousex, mousey)
-
+        slider1 = draw_slider(screen,50,458,159,20,-100,100,1)
+        output1 = draw_output(screen,175,400,50,50)
+        slider1.listen(events)
+        output1.setText(slider1.getValue())
         # instance2 = Coulombs()
 
     if current_screen[-1] == "wave_sim":
@@ -242,7 +253,27 @@ while running:
         if backgrnd1.collidepoint(pygame.mouse.get_pos()):
             mousex, mousey = pygame.mouse.get_pos()
             print(mousex, mousey)
+        if clicked == True:
+            slider1 = draw_slider(screen, 50, 458, 150, 20, -100, 100, 1)
+            output1 = draw_output(screen, 175, 400, 50, 50)
+            slider2 = draw_slider(screen, 50, 558, 150, 20, -100, 100, 1)
+            output2 = draw_output(screen, 175, 500, 50, 50)
+            slider3 = draw_slider(screen, 50, 658, 150, 20, -100, 100, 1)
+            output3 = draw_output(screen, 175, 600, 50, 50)
+            slider4 = draw_slider(screen, 50, 758, 150, 20, -100, 100, 1)
+            output4 = draw_output(screen, 175, 700, 50, 50)
+            wave = Waves(slider1.getValue(), slider2.getValue(), slider3.getValue(), slider4.getValue())
+            clicked = False
+        slider1.listen(events)
+        output1.setText(slider1.getValue())
+        slider2.listen(events)
+        output2.setText(slider2.getValue())
+        slider3.listen(events)
+        output3.setText(slider3.getValue())
+        slider4.listen(events)
+        output4.setText(slider4.getValue())
+        wave.wave_draw()
 
-    if current_screen[-1] == "mass_sim" or current_screen[-1] == "charge_sim":
+
+    if current_screen[-1] == "mass_sim" or current_screen[-1] == "charge_sim" or current_screen[-1] == "wave_sim":
         pygame_widgets.update(events)
-        # instance1 = Waves()
