@@ -5,57 +5,96 @@ import math
 import pygame_widgets
 from pygame_widgets.slider import Slider
 from pygame_widgets.textbox import TextBox
-
-k = 8.99 * (10 ^ 9)
 pygame.font.init()
 
 
 class Coulombs():
-    def __init__(self, s, u, v, a, t, f, q1, q2, r,p2y,p2x ):
-        self.s = 0
-        self.u = 0
-        self.v = 0
-        self.a = 0
+    def __init__(self, q1, q2, m,x,y):
+        # Coulomb's constant
+        self.k = 8.99e9  # in N m^2 / C^2
+        self.q1 = q1  # Charge 1
+        self.q2 = q2  # Charge 2
+        self.m = m  # Mass of the particle
         self.t = 0
-        # Coulombs
-        self.f = f
-        self.q1 = q1
-        self.q2 = q2
+        self.s = 0
+        self.x = x
+        self.y = y
 
-        self.r = r
-        # Newton's second law
-        self.mass = 1.6 * (10 ** (-16))
-        # also uses F and a, but they are already defined
-        self.p1x = 704
-        self.p1y = 504
-        self.p2x = p2x
-        self.p2y = p2y
-        self.grad = 1
+    def set_q1(self, q1):
+        if isinstance(q1, (int, float)):  # Check if the input is a number
+            self.q1 = q1
+        else:
+            raise ValueError("Charge q1 must be a number")
 
-    def coulombs(self):
-        qt = self.q1 * self.q2
-        denom = k * (self.r ** 2)
-        self.f = qt / denom
+    def set_q2(self, q2):
+        if isinstance(q2, (int, float)):  # Check if the input is a number
+            self.q2 = q2
+        else:
+            raise ValueError("Charge q2 must be a number")
 
-    def nsl(self):  # newtons second law
-        self.a = self.f / self.mass
+    def set_m(self, m):
+        if isinstance(m, (int, float)) and m > 0:  # Ensure mass is a positive number
+            self.m = m
+        else:
+            raise ValueError("Mass must be a positive number")
 
-    def suvat(self):
-        step1 = self.u * self.t
-        step2 = self.a * (self.t ** 2)
-        step3 = step2 * 0.5
-        self.s = self.s + step1 + step3
 
-    def set_p2x(self, mousex):
-        self.p2x = mousex
+    def calculate_force(self):
+        # Calculate force using Coulomb's Law
+        r = math.sqrt((self.x - 674) ** 2 + (self.y - 538) ** 2)
+        qt = self.q1 * self.q2  # Product of charges
+        denom = self.k * (r ** 2)  # Coulomb's constant and squared distance
+        force = (qt / denom) *100000000 # Force
+        print(force)
+        return force
 
-    def set_p2y(self, mousey):
-        self.p2y = mousey
+    def calculate_displacement(self):
+        self.t += 0.1  # Increase time by a small step
+        acceleration = self.calculate_acceleration()  # Calculate acceleration
+        self.s = 0.5 * acceleration * (self.t ** 2)  # Displacement using kinematic equation
 
-    def line(self):
-        grady = self.p2y - self.p1y
-        gradx = self.p2x - self.p1x
-        self.grad = grady / gradx
+    def calculate_acceleration(self):
+        # Calculate the force
+        force = self.calculate_force()
+        acceleration = force / self.m  # F = ma => a = F/m
+        return acceleration
+
+    def calculate_angle(self):
+        # Calculate the displacement from the central point (674, 538)
+        delta_x = self.x - 674  # Displacement in the x-direction
+        delta_y = self.y - 538  # Displacement in the y-direction
+
+        # Use math.atan2 to calculate the angle in radians
+        angle = math.atan2(delta_y, delta_x)  # atan2 automatically handles all quadrants
+
+        return angle
+
+    def update_position(self):
+        # Update position based on displacement (s)
+        self.calculate_displacement()  # Update displacement
+        
+        # Calculate the angle in radians
+        angle = self.calculate_angle()
+        if (self.q1) * (self.q2) > 0:
+            repel = True  # Same sign charges -> repelling 
+        else:
+            repel = False  # Opposite sign charges -> attracting
+
+        # Determine direction of movement (attraction or repulsion)
+        if repel:  # Charges are the same (repulsive force)
+            # Move the particle away from the center (along the line connecting the charges)
+            self.x += self.s * math.cos(angle)
+            self.y += self.s * math.sin(angle)
+        else:  # Charges are opposite (attractive force)
+            # Move the particle towards the center (along the line connecting the charges)
+            self.x -= self.s * math.cos(angle)
+            self.y -= self.s * math.sin(angle)
+
+    def draw(self, screen):
+        # Scale x and y to fit in the Pygame window
+        print(self.x,self.y)
+        # Draw the particle as a circle
+        pygame.draw.circle(screen, (255, 0, 0), (self.x, self.y), 5)  # Red particle
 
 
 class Waves():
@@ -161,7 +200,7 @@ def draw_output(screen,x,y,width,height):
 
 running = True
 current_screen = ["menu"]
-clicked = True
+clicked = False
 
 while running:
     events = pygame.event.get()
@@ -183,12 +222,12 @@ while running:
         if pos_check(back_button):
             back_button = pygame.draw.rect(screen, orange, rectangle(1, 0.4, 0.25, 0.25,False))
             # changes the colour of the back button when hovered
-            if event.type == pygame.MOUSEBUTTONDOWN and current_screen[-1] != "menu":
+            if event.type == pygame.MOUSEBUTTONDOWN and len(current_screen) > 1 :  
                 current_screen.pop()
                 print(current_screen)
 
-    if current_screen[-1] == "menu":  # defines the polygons on the menu screen
-        going = True
+    if current_screen[-1] == "menu":  # defines the polygons on the menu screen-----------------------------------
+        clicked = True
         # Charge Button
         chrg_button_points = hexagon(380, 350, 20)  # calculates each of the points for the hexagon
         chrg_button = poly_draw(purple, blue, chrg_button_points)  # draws the hexagon on screen with outline
@@ -217,33 +256,67 @@ while running:
             if event.type == pygame.MOUSEBUTTONDOWN:
                 current_screen.append("wave_sim")
 
-    if current_screen[-1] == "charge_sim":
+    if current_screen[-1] == "charge_sim":       #---------------------------------------------------------------
         sidebar = pygame.draw.rect(screen, red, rectangle(2, 9, 0, 1, False))
-        print(current_screen)
+        #print(current_screen)
         backgrnd1 = pygame.draw.rect(screen, black, rectangle(10, 10, 2, 1, False))
+        if clicked == True:
+            slider1 = draw_slider(screen, 50, 458, 150, 20, -100, 100, 1)
+            output1 = draw_output(screen, 175, 400, 50, 50)
+            slider2 = draw_slider(screen, 50, 558, 150, 20, -100, 100, 1)
+            output2 = draw_output(screen, 175, 500, 50, 50)
+            slider3 = draw_slider(screen, 50, 658, 150, 20, 1, 100, 1)
+            output3 = draw_output(screen, 175, 600, 50, 50)
+            clicked = False
+        slider1.listen(events)
+        output1.setText(slider1.getValue())
+        slider2.listen(events)
+        output2.setText(slider2.getValue())
+        slider3.listen(events)
+        output3.setText(slider3.getValue())
 
         if backgrnd1.collidepoint(pygame.mouse.get_pos()):
             mousex, mousey = pygame.mouse.get_pos()
-            print(mousex, mousey)
-        #output1.setText(slider1.getValue())
-        #slider1.listen(events)
-        #output2.setText(slider2.getValue())
-        #slider2.listen(events)
-        #output3.setText(slider3.getValue())
-        #slider3.listen(events)
-        #instance1 = Coulombs(slider1.getValue(),slider2.getValue(),slider3.getValue())
+            #print(mousex,mousey)
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                instance1 = Coulombs(slider1.getValue(),slider2.getValue(),slider3.getValue(),mousex,mousey)
+                sim_run = True
+        if sim_run ==True :
+            print("sim")
+            instance1.update_position()
+            instance1.draw(screen)
+            instance1.set_q1(slider1.getValue())
+            instance1.set_q2(slider2.getValue())
+            instance1.set_m(slider3.getValue())
 
-    if current_screen[-1] == "mass_sim":
+    if current_screen[-1] == "mass_sim":      #-------------------------------------------------------------------
         sidebar = pygame.draw.rect(screen, blue, rectangle(2, 9, 0, 1, False))
         print(current_screen)
         backgrnd1 = pygame.draw.rect(screen, black, rectangle(10, 10, 2, 1, False))
         if backgrnd1.collidepoint(pygame.mouse.get_pos()):
             mousex, mousey = pygame.mouse.get_pos()
             print(mousex, mousey)
-        slider1 = draw_slider(screen,50,458,159,20,-100,100,1)
-        output1 = draw_output(screen,175,400,50,50)
+        if clicked == True:
+            slider1 = draw_slider(screen, 50, 458, 150, 20, -100, 100, 1)
+            output1 = draw_output(screen, 175, 400, 50, 50)
+            slider2 = draw_slider(screen, 50, 558, 150, 20, -100, 100, 1)
+            output2 = draw_output(screen, 175, 500, 50, 50)
+            slider3 = draw_slider(screen, 50, 658, 150, 20, -100, 100, 1)
+            output3 = draw_output(screen, 175, 600, 50, 50)
+            slider4 = draw_slider(screen, 50, 758, 150, 20, -100, 100, 1)
+            output4 = draw_output(screen, 175, 700, 50, 50)
+            wave = Waves(slider1.getValue(), slider2.getValue(), slider3.getValue(), slider4.getValue())
+            clicked = False
         slider1.listen(events)
         output1.setText(slider1.getValue())
+        slider2.listen(events)
+        output2.setText(slider2.getValue())
+        slider3.listen(events)
+        output3.setText(slider3.getValue())
+        slider4.listen(events)
+        output4.setText(slider4.getValue())
+        wave.wave_draw()
+
         # instance2 = Coulombs()
 
     if current_screen[-1] == "wave_sim":
@@ -274,6 +347,6 @@ while running:
         output4.setText(slider4.getValue())
         wave.wave_draw()
 
-
-    if current_screen[-1] == "mass_sim" or current_screen[-1] == "charge_sim" or current_screen[-1] == "wave_sim":
+    if current_screen[-1] == "mass_sim" or current_screen[-1] == "charge_sim":
         pygame_widgets.update(events)
+        # instance1 = Waves()
