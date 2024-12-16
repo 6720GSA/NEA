@@ -1,6 +1,5 @@
 import pygame
 import random
-import math
 import numpy as np
 
 # Initialize Pygame
@@ -9,7 +8,7 @@ pygame.init()
 # Set up the screen
 width, height = 800, 600
 screen = pygame.display.set_mode((width, height))
-pygame.display.set_caption("Drifting Perlin Noise Background")
+pygame.display.set_caption("Static Perlin Noise Background")
 
 # Colors
 WHITE = (255, 255, 255)
@@ -20,11 +19,6 @@ scale = 100.0  # Controls how "zoomed in" the noise is
 octaves = 6     # Number of iterations (higher for more detail)
 persistence = 0.5  # How much influence each octave has
 lacunarity = 2.0  # Frequency multiplier between octaves
-
-# Camera position for movement
-camera_x = 0.0
-camera_y = 0.0
-camera_speed = 10  # Speed of the camera movement, adjust this to change drift speed
 
 # Gradient vector for Perlin noise
 def grad(hash, x, y):
@@ -70,41 +64,46 @@ def generate_permutation():
     p = p * 2  # Double the permutation table
     return p
 
-# Function to generate Perlin noise map efficiently using NumPy
-def generate_perlin_noise(width, height, scale, permutation, camera_x, camera_y):
-    # Create a NumPy array to hold noise values
-    noise_map = np.zeros((height, width), dtype=np.float32)
+# Function to generate Perlin noise map efficiently using NumPy (vectorized)
+def generate_perlin_noise(width, height, scale, permutation):
+    # Create a grid of coordinates for the noise generation
+    x_coords = np.linspace(0, width / scale, width, endpoint=False)
+    y_coords = np.linspace(0, height / scale, height, endpoint=False)
+    
+    # Create meshgrid of coordinates
+    x_grid, y_grid = np.meshgrid(x_coords, y_coords)
 
-    for y in range(height):
-        for x in range(width):
-            nx = (x + camera_x) / scale
-            ny = (y + camera_y) / scale
-            noise_value = perlin(nx, ny, permutation)
-            noise_map[y, x] = (noise_value + 1) / 2  # Normalize to [0, 1]
+    # Vectorized Perlin noise generation
+    noise_map = np.vectorize(lambda x, y: perlin(x, y, permutation))(x_grid, y_grid)
 
-    # Convert to RGB
-    noise_map = (noise_map * 255).astype(np.uint8)
+    # Normalize and scale noise to [0, 255] range
+    noise_map = ((noise_map + 1) / 2) * 255  # Normalize to [0, 1] and then to [0, 255]
+    noise_map = noise_map.astype(np.uint8)  # Convert to integer type for Pygame
 
-    # Return the noise map as a pygame surface
+    # Convert the noise map to a Pygame surface
     return pygame.surfarray.make_surface(noise_map)
 
 # Initialize permutation table
 permutation = generate_permutation()
+
+# Create a clock object to manage FPS
+clock = pygame.time.Clock()
+font = pygame.font.Font(None, 36)
 
 # Main loop
 running = True
 while running:
     screen.fill(BLACK)  # Clear the screen with black
 
-    # Generate the Perlin noise for the background with camera movement
-    noise_map = generate_perlin_noise(width, height, scale, permutation, camera_x, camera_y)
+    # Generate the Perlin noise for the background (static, no drift)
+    noise_map = generate_perlin_noise(width, height, scale, permutation)
 
     # Blit the noise map to the screen
     screen.blit(noise_map, (0, 0))
 
-    # Update the camera position to create the drifting effect
-    camera_x += camera_speed  # Adjust this value to control the speed of drift
-    camera_y += camera_speed
+    # Display FPS
+    fps_text = font.render(f"FPS: {int(clock.get_fps())}", True, WHITE)
+    screen.blit(fps_text, (10, 10))
 
     # Display the background
     pygame.display.update()
@@ -113,6 +112,9 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+
+    # Update the FPS counter
+    clock.tick(60)  # Limit the frame rate to 60 FPS
 
 # Quit Pygame
 pygame.quit()
