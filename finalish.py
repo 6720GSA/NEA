@@ -5,11 +5,12 @@ import math
 import pygame_widgets
 from pygame_widgets.slider import Slider
 from pygame_widgets.textbox import TextBox
+
 pygame.font.init()
 
 
 class Coulombs():
-    def __init__(self, q1, q2, m,x,y):
+    def __init__(self, q1, q2, m, x, y):
         # Coulomb's constant
         self.k = 8.99e9  # in N m^2 / C^2
         self.q1 = q1  # Charge 1
@@ -19,6 +20,7 @@ class Coulombs():
         self.s = 0
         self.x = x
         self.y = y
+        self.repel = True
 
     def set_q1(self, q1):
         if isinstance(q1, (int, float)):  # Check if the input is a number
@@ -38,13 +40,12 @@ class Coulombs():
         else:
             raise ValueError("Mass must be a positive number")
 
-
     def calculate_force(self):
         # Calculate force using Coulomb's Law
         r = math.sqrt((self.x - 674) ** 2 + (self.y - 538) ** 2)
         qt = self.q1 * self.q2  # Product of charges
         denom = self.k * (r ** 2)  # Coulomb's constant and squared distance
-        force = (qt / denom) *100000000 # Force
+        force = (qt / denom) * 100000000  # Force
         print(force)
         return force
 
@@ -69,30 +70,65 @@ class Coulombs():
 
         return angle
 
+    def repelcheck(self):
+        #sets a boolean value based on positive or negative charge
+        if self.q1 > 0:
+            q1posi = True
+        else:
+            q1posi = False
+
+        if self.q2 > 0:
+            q2posi = True
+        else:
+            q2posi = False
+
+        if q1posi == False and q2posi == False:
+            self.repel = True
+            print("repel 1")
+        elif q1posi == True and q2posi == True:
+            self.repel = True
+            print("repel 2")
+        else:
+            self.repel = False
+            print("repel false")
+
+
     def update_position(self):
         # Update position based on displacement (s)
         self.calculate_displacement()  # Update displacement
-        
+
         # Calculate the angle in radians
         angle = self.calculate_angle()
-        if (self.q1) * (self.q2) > 0:
-            repel = True  # Same sign charges -> repelling 
-        else:
-            repel = False  # Opposite sign charges -> attracting
-
         # Determine direction of movement (attraction or repulsion)
-        if repel:  # Charges are the same (repulsive force)
-            # Move the particle away from the center (along the line connecting the charges)
+        if self.q1 > 0:
+            q1posi = True
+        else:
+            q1posi = False
+
+        if self.q2 > 0:
+            q2posi = True
+        else:
+            q2posi = False
+
+        if q1posi == False and q2posi == False:# Charges are the same (repulsive force)
+            self.repel = True # Move the particle away from the center (along the line connecting the charges)
             self.x += self.s * math.cos(angle)
             self.y += self.s * math.sin(angle)
-        else:  # Charges are opposite (attractive force)
-            # Move the particle towards the center (along the line connecting the charges)
+            print("repel 1")
+        elif q1posi == True and q2posi == True:# Charges are the same (repulsive force)
+            self.repel = True # Move the particle away from the center (along the line connecting the charges)
+            self.x += self.s * math.cos(angle)
+            self.y += self.s * math.sin(angle)
+            print("repel 2")
+        else:              # Charges are opposite (attractive force)
+            self.repel = False # Move the particle towards the center (along the line connecting the charges)
             self.x -= self.s * math.cos(angle)
             self.y -= self.s * math.sin(angle)
+            print("repel false")
 
     def draw(self, screen):
         # Scale x and y to fit in the Pygame window
-        print(self.x,self.y)
+        print(self.x, self.y)
         # Draw the particle as a circle
         pygame.draw.circle(screen, (255, 0, 0), (self.x, self.y), 5)  # Red particle
 
@@ -106,26 +142,49 @@ class Waves():
         self.time = 0.1
         self.points = []
 
+    def set_amp(self, amp):
+        if isinstance(amp, (int, float)):  # Check if the input is a number
+            self.amp = amp
+        else:
+            raise ValueError("amplitude must be a number")
 
+    def set_wavnum(self, wavnum):
+        if isinstance(wavnum, (int, float)):  # Check if the input is a number
+            self.wavnum = wavnum
+        else:
+            raise ValueError("wave number must be a number")
 
-    def equation(self,x):
+    def set_phase(self, phase):
+        if isinstance(phase, (int, float)):
+            self.phase = phase
+        else:
+            raise ValueError("phase must be a number")
+
+    def set_angfreq(self, angfreq):
+        if isinstance(angfreq, (int, float)):  # Check if the input is a number
+            self.angfreq = angfreq
+        else:
+            raise ValueError("angle frequency must be a number")
+
+    def equation(self, x):
         p1 = self.wavnum * x
         p2 = self.angfreq * self.time
         p3 = p1 - p2 + self.phase
         y = self.amp * math.cos(p3)
         self.time += 0.1
-        return(y)
+        return (y)
 
     def wave_points(self):
         points = []
-        for each in range(240,1199):
-            y = Waves.equation(self,each)
-            points.append((each,y))
+        points.clear()
+        for each in range(240, 1199):
+            y = Waves.equation(self, each)
+            points.append((each, y))
         return points
 
     def wave_draw(self):
         points = Waves.wave_points(self)
-        pygame.draw.lines(screen,white,False,points)
+        pygame.draw.lines(screen, red, False, points)
 
 
 swidth, sheight = 1200, 1000
@@ -149,10 +208,10 @@ purple = (76, 0, 153)
 
 
 def hexagon(x, y, scale):  # creates a hexagonal button
-    multi1 = scale * 10    # scales the size of the hexagon
+    multi1 = scale * 10  # scales the size of the hexagon
     multi2 = scale * 5
     multi3 = scale * 11
-    p1 = (x + multi1, y + multi2)   #calculates the six points of the hexagon
+    p1 = (x + multi1, y + multi2)  # calculates the six points of the hexagon
     p2 = (x + multi1, y - multi2)
     p3 = (x, y - multi3)
     p4 = (x - multi1, y - multi2)
@@ -162,7 +221,7 @@ def hexagon(x, y, scale):  # creates a hexagonal button
     return points
 
 
-def poly_draw(colour1, colour2, points, ):       # takes a colour for each polygon and the list of points
+def poly_draw(colour1, colour2, points, ):  # takes a colour for each polygon and the list of points
     pygame.draw.polygon(screen, colour1, points, 0)
     pygame.draw.polygon(screen, colour2, points, 4)
 
@@ -189,14 +248,17 @@ def rectangle(width, height, x, y, centre):
 def pos_check(button):
     return button.collidepoint(pygame.mouse.get_pos())
 
-def draw_slider(screen,x,y,width,height,min,max,step):
-    slider = Slider(screen, x, y, width, height, min= min, max=max, step=step)
-    return(slider)
 
-def draw_output(screen,x,y,width,height):
+def draw_slider(screen, x, y, width, height, min, max, step):
+    slider = Slider(screen, x, y, width, height, min=min, max=max, step=step)
+    return (slider)
+
+
+def draw_output(screen, x, y, width, height):
     output = TextBox(screen, x, y, width, height, fontSize=35)
     output.disable()
-    return(output)
+    return (output)
+
 
 running = True
 current_screen = ["menu"]
@@ -213,18 +275,19 @@ while running:
     pygame.display.update()
     screen.fill(black)
     if current_screen[-1] != "ipsum":  # draws the bar at the top of the screen at all points
-        header = pygame.draw.rect(screen, dgrey,rectangle(10, 1, 0, 0, False))
+        header = pygame.draw.rect(screen, dgrey, rectangle(10, 1, 0, 0, False))
         # creates the bar at the top of the screen
-        title_box = pygame.draw.rect(screen, grey, rectangle(2, 0.45, 4, 0.25,True))
+        title_box = pygame.draw.rect(screen, grey, rectangle(2, 0.45, 4, 0.25, True))
         # creates the title box at the top of the screen
         back_button = pygame.draw.rect(screen, purple, rectangle(1, 0.4, 0.25, 0.25, False))
         # creates the back button
         if pos_check(back_button):
-            back_button = pygame.draw.rect(screen, orange, rectangle(1, 0.4, 0.25, 0.25,False))
+            back_button = pygame.draw.rect(screen, orange, rectangle(1, 0.4, 0.25, 0.25, False))
             # changes the colour of the back button when hovered
-            if event.type == pygame.MOUSEBUTTONDOWN and len(current_screen) > 1 :  
+            if event.type == pygame.MOUSEBUTTONDOWN and len(current_screen) > 1:
                 current_screen.pop()
                 print(current_screen)
+                sim_run = False
 
     if current_screen[-1] == "menu":  # defines the polygons on the menu screen-----------------------------------
         clicked = True
@@ -256,9 +319,9 @@ while running:
             if event.type == pygame.MOUSEBUTTONDOWN:
                 current_screen.append("wave_sim")
 
-    if current_screen[-1] == "charge_sim":       #---------------------------------------------------------------
+    if current_screen[-1] == "charge_sim":  # ---------------------------------------------------------------
         sidebar = pygame.draw.rect(screen, red, rectangle(2, 9, 0, 1, False))
-        #print(current_screen)
+        # print(current_screen)
         backgrnd1 = pygame.draw.rect(screen, black, rectangle(10, 10, 2, 1, False))
         if clicked == True:
             slider1 = draw_slider(screen, 50, 458, 150, 20, -100, 100, 1)
@@ -277,11 +340,11 @@ while running:
 
         if backgrnd1.collidepoint(pygame.mouse.get_pos()):
             mousex, mousey = pygame.mouse.get_pos()
-            #print(mousex,mousey)
+            # print(mousex,mousey)
             if event.type == pygame.MOUSEBUTTONDOWN:
-                instance1 = Coulombs(slider1.getValue(),slider2.getValue(),slider3.getValue(),mousex,mousey)
+                instance1 = Coulombs(slider1.getValue(), slider2.getValue(), slider3.getValue(), mousex, mousey)
                 sim_run = True
-        if sim_run ==True :
+        if sim_run == True:
             print("sim")
             instance1.update_position()
             instance1.draw(screen)
@@ -289,7 +352,7 @@ while running:
             instance1.set_q2(slider2.getValue())
             instance1.set_m(slider3.getValue())
 
-    if current_screen[-1] == "mass_sim":      #-------------------------------------------------------------------
+    if current_screen[-1] == "mass_sim":  # -------------------------------------------------------------------
         sidebar = pygame.draw.rect(screen, blue, rectangle(2, 9, 0, 1, False))
         print(current_screen)
         backgrnd1 = pygame.draw.rect(screen, black, rectangle(10, 10, 2, 1, False))
@@ -316,7 +379,10 @@ while running:
         slider4.listen(events)
         output4.setText(slider4.getValue())
         wave.wave_draw()
-
+        wave.set_amp(slider1.getValue())
+        wave.set_phase(slider2.getValue())
+        wave.set_wavnum((slider3.getValue()))
+        wave.set_angfreq(slider4.getValue())
         # instance2 = Coulombs()
 
     if current_screen[-1] == "wave_sim":
@@ -347,6 +413,6 @@ while running:
         output4.setText(slider4.getValue())
         wave.wave_draw()
 
-    if current_screen[-1] == "mass_sim" or current_screen[-1] == "charge_sim":
+    if current_screen[-1] == "mass_sim" or current_screen[-1] == "charge_sim" or current_screen[-1] == "wave_sim":
         pygame_widgets.update(events)
         # instance1 = Waves()
