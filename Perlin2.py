@@ -6,7 +6,7 @@ import numpy as np
 pygame.init()
 
 # Set up the screen
-width, height = 800, 600
+width, height = 1200, 1000
 screen = pygame.display.set_mode((width, height))
 pygame.display.set_caption("Static Perlin Noise Background")
 
@@ -15,10 +15,7 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 
 # Perlin noise parameters
-scale = 100.0  # Controls how "zoomed in" the noise is
-octaves = 6  # Number of iterations (higher for more detail)
-persistence = 0.5  # How much influence each octave has
-lacunarity = 2.0  # Frequency multiplier between octaves
+scale = 500.0  # Controls how "zoomed in" the noise is
 
 
 # Gradient vector for Perlin noise
@@ -89,8 +86,7 @@ def generate_perlin_noise(width, height, scale, permutation):
     # Convert the noise map to a Pygame surface
     return pygame.surfarray.make_surface(noise_map)
 
-def stretchmap(image, newWidth):
-    return pygame.transform.scale(image, (image.get_height(), newWidth))
+
 
 # Initialize permutation table
 permutation = generate_permutation()
@@ -101,12 +97,15 @@ font = pygame.font.Font(None, 36)
 
 # Main loop
 running = True
+clicked = True
 while running:
     screen.fill(BLACK)  # Clear the screen with black
 
     # Generate the Perlin noise for the background (static, no drift)
     noise_map = generate_perlin_noise(width, height, scale, permutation)
-    map = stretchmap(noise_map,1000)
+    if clicked == True:
+        map = pygame.transform.scale(noise_map, (noise_map.get_height(), height))
+        clicked = False
     # Blit the noise map to the screen
     screen.blit(map, (0, 0))
 
