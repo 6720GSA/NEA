@@ -45,7 +45,7 @@ class Coulombs():
         qt = self.q1 * self.q2  # Product of charges
         denom = self.k * (r ** 2)  # Coulomb's constant and squared distance
         force = (qt / denom) * 100000000  # Force
-        print("Force = ", force)
+        print("Force = ",force)
         return force
 
     def calculate_displacement(self):
@@ -70,7 +70,7 @@ class Coulombs():
         return angle
 
     def repelcheck(self):
-        # sets a boolean value based on positive or negative charge
+        #sets a boolean value based on positive or negative charge
         if self.q1 > 0:
             q1posi = True
         else:
@@ -90,15 +90,16 @@ class Coulombs():
         else:
             repel = False
             print("repel false")
-
+        
         return repel
 
     def direction(self):
         direction = self.repelcheck()
         if direction == True:
-            return (True)
+            return(True)
         elif direction == False:
-            return (False)
+            return(False)
+            
 
     def repulsion(self):
         # Update position based on displacement (s)
@@ -108,10 +109,11 @@ class Coulombs():
         angle = self.calculate_angle()
         # Determine direction of movement (attraction or repulsion)
 
-        # Move the particle away from the center (along the line connecting the charges)
+         # Move the particle away from the center (along the line connecting the charges)
         self.x += self.s * math.cos(angle)
         self.y += self.s * math.sin(angle)
         print("repel 1")
+
 
     def attraction(self):
         # Update position based on displacement (s)
@@ -125,6 +127,7 @@ class Coulombs():
         print(f"Updated x: {self.x}, y: {self.y}")
         print("repel false")
 
+
     def draw(self, screen):
         # Scale x and y to fit in the Pygame window
         # Draw the particle as a circle
@@ -132,14 +135,15 @@ class Coulombs():
 
 
 class Waves():
-    def __init__(self, amp, wavlen, phase, angfreq, tsf):
+    def __init__(self, amp, wavlen, phase1, angfreq,tsf,phase2):
         self.amp = amp
         self.wavlen = wavlen
-        self.phase = phase  # Phase should be in radians
+        self.phase1 = phase1  # Phase should be in radians
+        self.phase2 = phase2
         self.angfreq = angfreq  # Angular frequency should be in radians per second
         self.time = 0.1  # Starting time in seconds
         self.points = []
-        self.tsf = tsf  # time scale factor
+        self.tsf = tsf # time scale factor
 
     def set_amp(self, amp):
         if isinstance(amp, (int, float)):  # Check if the input is a number
@@ -153,9 +157,15 @@ class Waves():
         else:
             raise ValueError("Wave number must be a number")
 
-    def set_phase(self, phase):
+    def set_phase1(self, phase):
         if isinstance(phase, (int, float)):  # Phase should be in radians
-            self.phase = phase
+            self.phase1 = phase
+        else:
+            raise ValueError("Phase must be a number (radians)")
+    
+    def set_phase2(self, phase):
+        if isinstance(phase, (int, float)):  # Phase should be in radians
+            self.phase2 = phase
         else:
             raise ValueError("Phase must be a number (radians)")
 
@@ -164,16 +174,96 @@ class Waves():
             self.angfreq = angfreq
         else:
             raise ValueError("Angular frequency must be a number (radians per second)")
-
-    def set_tsf(self, tsf):
+    
+    def set_tsf(self,tsf):
         if isinstance(tsf, (int, float)):  # Check if the input is a number
             self.tsf = tsf
         else:
             raise ValueError("Wave number must be a number")
 
-    def equation(self, x):
+
+    def equation(self, x,phase):
         if self.wavlen != 0:
-            wavnum = (2 * math.pi) / self.wavlen
+            wavnum = (2 * math.pi)/self.wavlen
+        else:
+            wavnum = 0
+        p1 = wavnum * x  # Wave number times position
+        p2 = self.angfreq * self.time  # Angular frequency times time
+        p3 = p1 - p2 + phase  # Complete phase term
+        y = self.amp * math.cos(p3)  # Calculate y using cosine (in radians)
+        self.time += self.tsf  # Increment time slightly for each calculation
+        return y
+
+    def wave_points(self,phase):
+        points = []  # List to store the points for the wave
+        if phase == True:
+            for each in range(240, 1199):  # Iterate over the x-values (positions)
+                y = (self.equation(each,self.phase1) + 550)  # Get the wave value, shift it by 550 for visibility
+                points.append((each, y))  # Add the point (x, y) to the list
+            return points
+        elif phase == False:
+            for each in range(240, 1199):  # Iterate over the x-values (positions)
+                y = (self.equation(each,self.phase2) + 550)  # Get the wave value, shift it by 550 for visibility
+                points.append((each, y))  # Add the point (x, y) to the list
+            return points
+
+
+    def wave_draw(self):
+        points1 = self.wave_points(True)  # Get the points for the wave
+        points2 = self.wave_points(False)
+        pygame.draw.lines(screen, blue, False, points1, 3)  # Draw the wave on the screen using pygame
+        pygame.draw.lines(screen, red, False, points2, 3)
+
+
+class de_broglie():
+    def __init__(self, amp, momentum, phase, angfreq, tsf):
+        self.h = 6.62607015*10**(-34)  # Planck's constant
+        self.p = momentum  # Momentum
+        self.amp = amp  # Amplitude
+        self.phase = phase  # Phase (in radians)
+        self.angfreq = angfreq  # Angular frequency (in radians per second)
+        self.time = 0.1  # Initial time (in seconds)
+        self.points = []
+        self.tsf = tsf  # Time scale factor
+
+    def set_amp(self, amp):
+        if isinstance(amp, (int, float)):  
+            self.amp = amp
+        else:
+            raise ValueError("Amplitude must be a number")
+
+    def set_wavnum(self, momentum):
+        if isinstance(momentum, (int, float)):  
+            self.p = momentum
+        else:
+            raise ValueError("Momentum must be a number")
+
+    def set_phase(self, phase):
+        if isinstance(phase, (int, float)):  
+            self.phase = phase
+        else:
+            raise ValueError("Phase must be a number (radians)")
+
+    def set_angfreq(self, angfreq):
+        if isinstance(angfreq, (int, float)):  
+            self.angfreq = angfreq
+        else:
+            raise ValueError("Angular frequency must be a number (radians per second)")
+    
+    def set_tsf(self, tsf):
+        if isinstance(tsf, (int, float)):  
+            self.tsf = tsf
+        else:
+            raise ValueError("Time scale factor must be a number")
+
+    def equation(self, x):
+        if self.p != 0:
+            wavlen = self.h / self.p
+        else:
+            wavlen = 0
+
+        if wavlen != 0:
+            wavnum = (2 * math.pi) / wavlen
         else:
             wavnum = 0
         p1 = wavnum * x  # Wave number times position
@@ -185,14 +275,17 @@ class Waves():
 
     def wave_points(self):
         points = []  # List to store the points for the wave
-        for each in range(240, 1199):  # Iterate over the x-values (positions)
+        for each in range(240, 1200, 10):  # Iterate over the x-values (positions)
             y = (self.equation(each) + 550)  # Get the wave value, shift it by 550 for visibility
             points.append((each, y))  # Add the point (x, y) to the list
         return points
+    
+    def draw_debroglie(self):
+        points = self.wave_points()
+        for each in points:
+            pygame.draw.circle(screen, (255, 0, 0), (each[0], each[1]), 5)  # Draw particle
 
-    def wave_draw(self):
-        points = self.wave_points()  # Get the points for the wave
-        pygame.draw.lines(screen, red, False, points, 3)  # Draw the wave on the screen using pygame
+
 
 
 swidth, sheight = 1200, 1000
@@ -267,7 +360,6 @@ def draw_output(screen, x, y, width, height):
     output.disable()
     return (output)
 
-
 def format_value(label, value, max_len=4):
     # Format the value to at most 4 characters, including the decimal point
     formatted_value = f"{value:.3f}"  # Round to 3 decimal places
@@ -277,11 +369,11 @@ def format_value(label, value, max_len=4):
     # Add the label to the formatted value
     return f"{label} {formatted_value}"
 
-
 running = True
 current_screen = ["menu"]
 clicked = False
-
+toggle = False
+clock = pygame.time.Clock()
 while running:
     events = pygame.event.get()
     for event in events:
@@ -304,6 +396,7 @@ while running:
             # changes the colour of the back button when hovered
             if event.type == pygame.MOUSEBUTTONDOWN and len(current_screen) > 1:
                 current_screen.pop()
+                #print(current_screen)
                 sim_run = False
 
     if current_screen[-1] == "menu":  # defines the polygons on the menu screen-----------------------------------
@@ -338,26 +431,25 @@ while running:
 
     if current_screen[-1] == "charge_sim":  # ---------------------------------------------------------------
         sidebar = pygame.draw.rect(screen, red, rectangle(2, 9, 0, 1, False))
-        # print(current_screen)
         backgrnd1 = pygame.draw.rect(screen, black, rectangle(10, 10, 2, 1, False))
         if clicked == True:
             slider1 = draw_slider(screen, 50, 458, 150, 20, -100, 100, 1)
-            output1 = draw_output(screen, 25, 400, 150, 40)
+            output1 = draw_output(screen, 175, 400, 50, 50)
             slider2 = draw_slider(screen, 50, 558, 150, 20, -100, 100, 1)
-            output2 = draw_output(screen, 25, 500, 150, 40)
+            output2 = draw_output(screen, 175, 500, 50, 50)
             slider3 = draw_slider(screen, 50, 658, 150, 20, 1, 100, 1)
-            output3 = draw_output(screen, 25, 600, 150, 40)
+            output3 = draw_output(screen, 175, 600, 50, 50)
             slider4 = draw_slider(screen, 50, 758, 150, 20, -3.14, 3.14, 0.1)
             output4 = draw_output(screen, 25, 700, 210, 40)
-            slider5 = draw_slider(screen, 50, 358, 150, 20, 0.0000001, 0.0001, 0.0000001)
+            slider5 = draw_slider(screen, 50, 358, 150, 20, 0.0000001,0.0001 , 0.0000001)
             output5 = draw_output(screen, 25, 300, 150, 40)
             clicked = False
         slider1.listen(events)
-        output1.setText(format_value("Charge 1:", slider1.getValue()))
+        output1.setText(slider1.getValue())
         slider2.listen(events)
-        output2.setText(format_value("Charge 2:", slider2.getValue()))
+        output2.setText(slider2.getValue())
         slider3.listen(events)
-        output3.setText(format_value("Mass:", slider3.getValue()))
+        output3.setText(slider3.getValue())
         slider4.hide()
         slider5.hide()
         output4.hide()
@@ -365,12 +457,11 @@ while running:
 
         if backgrnd1.collidepoint(pygame.mouse.get_pos()):
             mousex, mousey = pygame.mouse.get_pos()
-            # print(mousex,mousey)
             if event.type == pygame.MOUSEBUTTONDOWN:
                 instance1 = Coulombs(slider1.getValue(), slider2.getValue(), slider3.getValue(), mousex, mousey)
                 sim_run = True
         if sim_run == True:
-            # print("sim")
+            #print("sim")
             direction = instance1.direction()
             instance1.draw(screen)
             instance1.set_q1(slider1.getValue())
@@ -382,81 +473,147 @@ while running:
                 instance1.attraction()
 
     if current_screen[-1] == "mass_sim":  # -------------------------------------------------------------------
-        sidebar = pygame.draw.rect(screen, blue, rectangle(2, 9, 0, 1, False))
-        # print(current_screen)
+        sidebar = pygame.draw.rect(screen, purple, rectangle(2, 9, 0, 1, False))
         backgrnd1 = pygame.draw.rect(screen, black, rectangle(10, 10, 2, 1, False))
-        if backgrnd1.collidepoint(pygame.mouse.get_pos()):
-            mousex, mousey = pygame.mouse.get_pos()
-            # print(mousex, mousey)
-        if clicked == True:
-            slider1 = draw_slider(screen, 50, 458, 150, 20, -100, 100, 1)
-            output1 = draw_output(screen, 175, 400, 50, 50)
-            slider2 = draw_slider(screen, 50, 558, 150, 20, -100, 100, 1)
-            output2 = draw_output(screen, 175, 500, 50, 50)
-            slider3 = draw_slider(screen, 50, 658, 150, 20, -100, 100, 1)
-            output3 = draw_output(screen, 175, 600, 50, 50)
-            slider4 = draw_slider(screen, 50, 758, 150, 20, -100, 100, 1)
-            output4 = draw_output(screen, 175, 700, 50, 50)
-            wave = Waves(slider1.getValue(), slider2.getValue(), slider3.getValue(), slider4.getValue())
-            clicked = False
-        slider1.listen(events)
-        output1.setText(slider1.getValue())
-        slider2.listen(events)
-        output2.setText(slider2.getValue())
-        slider3.listen(events)
-        output3.setText(slider3.getValue())
-        slider4.listen(events)
-        output4.setText(slider4.getValue())
-        wave.wave_draw()
-        wave.set_amp(slider1.getValue())
-        wave.set_phase(slider2.getValue())
-        wave.set_wavnum(slider3.getValue())
-        wave.set_angfreq(slider4.getValue())
-        # instance2 = Coulombs()
-
-    if current_screen[-1] == "wave_sim":
-        sidebar = pygame.draw.rect(screen, green, rectangle(2, 9, 0, 1, False))
-        # print(current_screen)
-        backgrnd1 = pygame.draw.rect(screen, black, rectangle(10, 10, 2, 1, False))
-        if backgrnd1.collidepoint(pygame.mouse.get_pos()):
-            mousex, mousey = pygame.mouse.get_pos()
-            # print(mousex, mousey)
+        #if toggle == True:
+        #    toggledebroglie = pygame.draw.rect(screen, red, rectangle(1, 1, 0.5, 2, False))
+        #if toggledebroglie.collidepoint(pygame.mouse.get_pos()):
+        #    toggledebroglie = pygame.draw.rect(screen, orange, rectangle(1, 1, 0.5, 2, False))
+        #    if event.type == pygame.MOUSEBUTTONDOWN:
+        #        toggle = False
+        #        current_screen.pop()
         if clicked == True:
             slider1 = draw_slider(screen, 50, 458, 150, 20, -300, 300, 1)
             output1 = draw_output(screen, 25, 400, 150, 40)
-            slider2 = draw_slider(screen, 50, 558, 150, 20, -4, 4, 0.1, )
+            slider2 = draw_slider(screen, 50, 558, 150, 20, -4, 4, 0.1,)
             output2 = draw_output(screen, 25, 500, 150, 40)
-            slider3 = draw_slider(screen, 50, 658, 150, 20, -300, 300, 1)
+            slider3 = draw_slider(screen, 50, 658, 150, 20, 1, 3000, 1)
             output3 = draw_output(screen, 25, 600, 200, 40)
             slider4 = draw_slider(screen, 50, 758, 150, 20, -3.14, 3.14, 0.1)
             output4 = draw_output(screen, 25, 700, 210, 40)
-            slider5 = draw_slider(screen, 50, 358, 150, 20, 0.0000001, 0.0001, 0.0000001)
+            slider5 = draw_slider(screen, 50, 358, 150, 20, 0.0000001,0.0001 , 0.0000001)
             output5 = draw_output(screen, 25, 300, 150, 40)
             clicked = False
         if backgrnd1.collidepoint(pygame.mouse.get_pos()):
             mousex, mousey = pygame.mouse.get_pos()
             if event.type == pygame.MOUSEBUTTONDOWN:
-                wave = Waves(slider1.getValue(), slider2.getValue(), slider3.getValue(), slider4.getValue(),
-                             slider5.getValue())
+                particles = de_broglie(slider1.getValue(), slider2.getValue(), slider3.getValue(), slider4.getValue(),slider5.getValue())
                 sim_run = True
+
         slider1.listen(events)
         output1.setText(format_value("Amplitude:", slider1.getValue()))
         slider2.listen(events)
         output2.setText(format_value("Phase:", slider2.getValue()))
         slider3.listen(events)
-        output3.setText(format_value("Wave Number:", slider3.getValue()))
+        output3.setText(format_value("Momentum:", slider3.getValue()))
         slider4.listen(events)
         output4.setText(format_value("Angular Frequency:", slider4.getValue()))
         slider5.listen(events)
         output5.setText(format_value("Time Scale:", slider5.getValue()))
         if sim_run == True:
+            particles.draw_debroglie()
+            particles.set_amp(slider1.getValue())
+            particles.set_phase(slider2.getValue())
+            particles.set_wavnum(slider3.getValue())
+            particles.set_angfreq(slider4.getValue())
+            particles.set_tsf(slider5.getValue())
+            #print(mousex, mousey)
+        
+
+    if current_screen[-1] == "wave_sim":  # --------------------------------------------------------------------
+        sidebar = pygame.draw.rect(screen, purple, rectangle(2, 9, 0, 1, False))
+        backgrnd1 = pygame.draw.rect(screen, black, rectangle(10, 10, 2, 1, False))           
+                  
+        
+        if clicked == True:
+            slider1 = draw_slider(screen, 50, 458, 150, 20, -300, 300, 1)
+            output1 = draw_output(screen, 25, 400, 150, 40)
+            slider2 = draw_slider(screen, 50, 558, 150, 20, -4, 4, 0.1,)
+            output2 = draw_output(screen, 25, 500, 150, 40)
+            slider3 = draw_slider(screen, 50, 658, 150, 20, -300, 300, 1)
+            output3 = draw_output(screen, 25, 600, 200, 40)
+            slider4 = draw_slider(screen, 50, 858, 150, 20, -3.14, 3.14, 0.1)
+            output4 = draw_output(screen, 25, 800, 210, 40)
+            slider5 = draw_slider(screen, 50, 358, 150, 20, 0.0000001,0.0001 , 0.0000001)
+            output5 = draw_output(screen, 25, 300, 150, 40)
+            slider6 = draw_slider(screen, 50, 758, 150, 20, -4, 4, 0.1)
+            output6 = draw_output(screen, 25, 700, 200, 40)
+            clicked = False
+        if backgrnd1.collidepoint(pygame.mouse.get_pos()):
+            mousex, mousey = pygame.mouse.get_pos()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                wave = Waves(slider1.getValue(), slider2.getValue(), slider3.getValue(), slider4.getValue(),slider5.getValue(),slider6.getValue())
+                sim_run = True
+        slider1.listen(events)
+        output1.setText(format_value("Amplitude:", slider1.getValue()))
+        slider2.listen(events)
+        output2.setText(format_value("Phase1:", slider2.getValue()))
+        slider3.listen(events)
+        output3.setText(format_value("Wavelength:", slider3.getValue()))
+        slider4.listen(events)
+        output4.setText(format_value("Angular Frequency:", slider4.getValue()))
+        slider5.listen(events)
+        output5.setText(format_value("Time Scale:", slider5.getValue()))
+        slider6.listen(events)
+        output6.setText(format_value("Phase2:", slider6.getValue()))
+
+        if sim_run == True:
             wave.wave_draw()
             wave.set_amp(slider1.getValue())
-            wave.set_phase(slider2.getValue())
+            wave.set_phase1(slider2.getValue())
             wave.set_wavnum(slider3.getValue())
             wave.set_angfreq(slider4.getValue())
             wave.set_tsf(slider5.getValue())
+            wave.set_phase2(slider6.getValue())
+        
 
+    if current_screen[-1] == "de broglie":
+        sidebar = pygame.draw.rect(screen, purple, rectangle(2, 9, 0, 1, False))
+        backgrnd1 = pygame.draw.rect(screen, black, rectangle(10, 10, 2, 1, False))
+        if toggle == True:
+            toggledebroglie = pygame.draw.rect(screen, red, rectangle(1, 1, 0.5, 2, False))
+        if toggledebroglie.collidepoint(pygame.mouse.get_pos()):
+            toggledebroglie = pygame.draw.rect(screen, orange, rectangle(1, 1, 0.5, 2, False))
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                toggle = False
+                current_screen.pop()
+        if clicked == True:
+            slider1 = draw_slider(screen, 50, 458, 150, 20, -300, 300, 1)
+            output1 = draw_output(screen, 25, 400, 150, 40)
+            slider2 = draw_slider(screen, 50, 558, 150, 20, -4, 4, 0.1,)
+            output2 = draw_output(screen, 25, 500, 150, 40)
+            slider3 = draw_slider(screen, 50, 658, 150, 20, -300, 300, 1)
+            output3 = draw_output(screen, 25, 600, 200, 40)
+            slider4 = draw_slider(screen, 50, 758, 150, 20, -3.14, 3.14, 0.1)
+            output4 = draw_output(screen, 25, 700, 210, 40)
+            slider5 = draw_slider(screen, 50, 358, 150, 20, 0.0000001,0.0001 , 0.0000001)
+            output5 = draw_output(screen, 25, 300, 150, 40)
+            clicked = False
+        if backgrnd1.collidepoint(pygame.mouse.get_pos()):
+            mousex, mousey = pygame.mouse.get_pos()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                particles = de_broglie(slider1.getValue(), slider2.getValue(), slider3.getValue(), slider4.getValue(),slider5.getValue())
+                sim_run = True
+
+        slider1.listen(events)
+        output1.setText(format_value("Amplitude:", slider1.getValue()))
+        slider2.listen(events)
+        output2.setText(format_value("Phase:", slider2.getValue()))
+        slider3.listen(events)
+        output3.setText(format_value("Momentum:", slider3.getValue()))
+        slider4.listen(events)
+        output4.setText(format_value("Angular Frequency:", slider4.getValue()))
+        slider5.listen(events)
+        output5.setText(format_value("Time Scale:", slider5.getValue()))
+        if sim_run == True:
+            particles.draw_debroglie()
+            particles.set_amp(slider1.getValue())
+            particles.set_phase(slider2.getValue())
+            particles.set_wavnum(slider3.getValue())
+            particles.set_angfreq(slider4.getValue())
+            particles.set_tsf(slider5.getValue())  
+#
     if current_screen[-1] == "mass_sim" or current_screen[-1] == "charge_sim" or current_screen[-1] == "wave_sim":
         pygame_widgets.update(events)
-        # instance1 = Waves()
+     
+    pygame.display.update()
