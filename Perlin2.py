@@ -16,25 +16,29 @@ BLACK = (0, 0, 0)
 
 # Perlin noise parameters
 scale = 100.0  # Controls how "zoomed in" the noise is
-octaves = 6     # Number of iterations (higher for more detail)
+octaves = 6  # Number of iterations (higher for more detail)
 persistence = 0.5  # How much influence each octave has
 lacunarity = 2.0  # Frequency multiplier between octaves
 
+
 # Gradient vector for Perlin noise
 def grad(hash, x, y):
-    """Calculate gradient based on hash value"""
+    #Calculate gradient based on hash value
     h = hash & 15
     u = x if h < 8 else y
     v = y if h < 4 else x
     return (u if (h & 1) == 0 else -u) + (v if (h & 2) == 0 else -v)
 
+
 # Fade function for smoothing the Perlin noise curve
 def fade(t):
     return t * t * t * (t * (t * 6 - 15) + 10)
 
+
 # Linear interpolation
 def lerp(a, b, t):
     return a + t * (b - a)
+
 
 # Perlin Noise Function
 def perlin(x, y, permutation):
@@ -57,6 +61,7 @@ def perlin(x, y, permutation):
     x2 = lerp(grad(ab, xf, yf - 1), grad(bb, xf - 1, yf - 1), u)
     return lerp(x1, x2, v)
 
+
 # Generate a permutation table (this is a random pattern used to shuffle the gradient vectors)
 def generate_permutation():
     p = list(range(256))
@@ -64,12 +69,13 @@ def generate_permutation():
     p = p * 2  # Double the permutation table
     return p
 
+
 # Function to generate Perlin noise map efficiently using NumPy (vectorized)
 def generate_perlin_noise(width, height, scale, permutation):
     # Create a grid of coordinates for the noise generation
     x_coords = np.linspace(0, width / scale, width, endpoint=False)
     y_coords = np.linspace(0, height / scale, height, endpoint=False)
-    
+
     # Create meshgrid of coordinates
     x_grid, y_grid = np.meshgrid(x_coords, y_coords)
 
@@ -82,6 +88,9 @@ def generate_perlin_noise(width, height, scale, permutation):
 
     # Convert the noise map to a Pygame surface
     return pygame.surfarray.make_surface(noise_map)
+
+def stretchmap(image, newWidth):
+    return pygame.transform.scale(image, (image.get_height(), newWidth))
 
 # Initialize permutation table
 permutation = generate_permutation()
@@ -97,9 +106,9 @@ while running:
 
     # Generate the Perlin noise for the background (static, no drift)
     noise_map = generate_perlin_noise(width, height, scale, permutation)
-
+    map = stretchmap(noise_map,1000)
     # Blit the noise map to the screen
-    screen.blit(noise_map, (0, 0))
+    screen.blit(map, (0, 0))
 
     # Display FPS
     fps_text = font.render(f"FPS: {int(clock.get_fps())}", True, WHITE)
