@@ -1,11 +1,12 @@
 # https://lampz.tugraz.at/~hadley/physikm/script/waves/wave.en.php
 
-import pygame
 import math
+import random
+
+import pygame
 import pygame_widgets
 from pygame_widgets.slider import Slider
 from pygame_widgets.textbox import TextBox
-import random
 
 pygame.font.init()
 
@@ -216,7 +217,7 @@ class Waves():
 
 
 class Stokes_Law():
-    def __init__(self, radius,p1,p2,vis,centr,x,y):
+    def __init__(self, radius,p1,p2,vis,centr,x,y,colour):
         self.radius = radius
         self.p1 = p1 # density of particle
         self.p2 = p2 # density of solvent
@@ -225,6 +226,7 @@ class Stokes_Law():
         self.centr = centr # centrifuge influences how much gravity is applied
         self.x = x
         self.y = y
+        self.colour = colour
 
 
     def set_rad(self, radius):
@@ -262,18 +264,15 @@ class Stokes_Law():
         pt = self.p1 - self.p2
         g = self.centr * self.g
         numerator = d * pt * g
-        denom = 18 * self.vis
-        return numerator/denom
-
-    def movement(self):
-        velocity = Stokes_Law.equation()
+        denom = 180000 * self.vis
+        velocity = numerator/denom
+        print(velocity)
         self.y += velocity
 
+
     def draw_particle(self,screen):
-        r = random.randint(138,240)
-        g = random.randint(109,200)
-        b = random.randint(58,13)
-        pygame.draw.circle(screen, (r, g, b), (self.x, self.y), 10)  # Red particle)
+
+        pygame.draw.circle(screen, self.colour, (self.x, self.y), self.radius)
 
 
 
@@ -361,7 +360,7 @@ def format_value(label, value, max_len=4):
     # Add the label to the formatted value
     return f"{label} {formatted_value}"
 
-
+stokes_particles = []
 running = True
 current_screen = ["menu"]
 clicked = False
@@ -412,7 +411,7 @@ while running:
             if event.type == pygame.MOUSEBUTTONDOWN:
                 current_screen.append("charge_sim")
 
-        if mass_rect.collidepoint(pygame.mouse.get_pos()):
+        if stokes_rect.collidepoint(pygame.mouse.get_pos()):
             mass_button = poly_draw(orange, blue, stokes_button_points)
             if event.type == pygame.MOUSEBUTTONDOWN:
                 current_screen.append("Stokes Law")
@@ -474,23 +473,55 @@ while running:
         backgrnd1 = pygame.draw.rect(screen, black, rectangle(10, 10, 2, 1, False))
 
         if clicked == True:
-            slider1 = draw_slider(screen, 50, 458, 150, 20, -300, 300, 1)
+            slider1 = draw_slider(screen, 50, 458, 150, 20, 1, 20, 1)
             output1 = draw_output(screen, 25, 400, 150, 40)
-            slider2 = draw_slider(screen, 50, 558, 150, 20, -4, 4, 0.1, )
-            output2 = draw_output(screen, 25, 500, 150, 40)
-            slider3 = draw_slider(screen, 50, 658, 150, 20, -300, 300, 1)
-            output3 = draw_output(screen, 25, 600, 200, 40)
-            slider4 = draw_slider(screen, 50, 858, 150, 20, -3.14, 3.14, 0.1)
-            output4 = draw_output(screen, 25, 800, 210, 40)
-            slider5 = draw_slider(screen, 50, 358, 150, 20, 0.0000001, 0.0001, 0.0000001)
-            output5 = draw_output(screen, 25, 300, 150, 40)
-            slider6 = draw_slider(screen, 50, 758, 150, 20, -4, 4, 0.1)
+            slider2 = draw_slider(screen, 50, 558, 150, 20, 500, 1500, 50, )
+            output2 = draw_output(screen, 25, 500, 210, 40)
+            slider3 = draw_slider(screen, 50, 658, 150, 20, 500, 1500, 50)
+            output3 = draw_output(screen, 25, 600, 210, 40)
+            slider4 = draw_slider(screen, 50, 758, 150, 20, 1, 100, 1)
+            output4 = draw_output(screen, 25, 700, 150, 40)
+            slider5 = draw_slider(screen, 50, 358, 150, 20, 1, 40, 1)
+            output5 = draw_output(screen, 25, 300, 200, 40)
+            slider6 = draw_slider(screen, 50, 758, 150, 20, 1, 10, 1)
             output6 = draw_output(screen, 25, 700, 200, 40)
             clicked = False
+        slider1.listen(events)
+        output1.setText(format_value("Radius:", slider1.getValue()))
+        slider2.listen(events)
+        output2.setText(format_value("Density of Particle:", slider2.getValue()))
+        slider3.listen(events)
+        output3.setText(format_value("Density of Solvent:", slider3.getValue()))
+        slider4.listen(events)
+        output4.setText(format_value("Viscosity:", slider4.getValue()))
+        slider5.listen(events)
+        output5.setText(format_value("Centrifugal Force:", slider5.getValue()))
+        slider6.hide()
+        output6.hide()
         if backgrnd1.collidepoint(pygame.mouse.get_pos()):
             mousex, mousey = pygame.mouse.get_pos()
             if event.type == pygame.MOUSEBUTTONDOWN:
-                stokes = Stokes_Law(slider1.getValue(),slider2.getValue(),slider3.getValue(),slider4.getValue(),slider5.getValue())
+                for i in range(1,5):
+                    r = random.randint(138,240)
+                    g = random.randint(109,200)
+                    b = random.randint(13,58)
+                    colour = (r,g,b)
+                    x = random.randint(250,1190)
+                    y = random.randint(105,990)
+                    stokes_particles.append(Stokes_Law(slider1.getValue(), slider2.getValue(), slider3.getValue(),slider4.getValue(),slider5.getValue(), x, y,colour))
+                    sim_run = True
+        if sim_run == True:
+            for each in stokes_particles:
+                each.set_rad(slider1.getValue())
+                each.set_p1(slider2.getValue())
+                each.set_p2(slider3.getValue())
+                each.set_viscosity(slider4.getValue())
+                each.set_centrifuge(slider5.getValue())
+                each.equation()
+                each.draw_particle(screen)
+
+
+
 
 
     if current_screen[-1] == "wave_sim":  # --------------------------------------------------------------------
@@ -527,8 +558,8 @@ while running:
         output4.setText(format_value("Angular Frequency:", slider4.getValue()))
         slider5.listen(events)
         output5.setText(format_value("Time Scale:", slider5.getValue()))
-        slider6.hide()
-        output6.hide()
+        slider6.listen(events)
+        output6.setText(format_value("Phase2:", slider6.getValue()))
 
         if sim_run == True:
             wave.wave_draw()
@@ -540,7 +571,7 @@ while running:
             wave.set_phase2(slider6.getValue())
 
 
-    if current_screen[-1] == "mass_sim" or current_screen[-1] == "charge_sim" or current_screen[-1] == "wave_sim":
+    if current_screen[-1] == "Stokes Law" or current_screen[-1] == "charge_sim" or current_screen[-1] == "wave_sim":
         pygame_widgets.update(events)
 
     pygame.display.update()
