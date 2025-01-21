@@ -16,14 +16,9 @@ BLACK = (0, 0, 0)
 
 # Perlin noise parameters
 scale = 100.0  # Controls how "zoomed in" the noise is
-octaves = 6     # Number of iterations (higher for more detail)
-persistence = 0.5  # How much influence each octave has
-lacunarity = 2.0  # Frequency multiplier between octaves
 
-# Camera position for movement
-camera_x = 0.0
-camera_y = 0.0
-camera_speed = 10  # Speed of the camera movement, adjust this to change drift speed
+
+
 
 # Gradient vector for Perlin noise
 def grad(hash, x, y):
@@ -106,10 +101,6 @@ while running:
 
     # Blit the noise map to the screen
     screen.blit(noise_map, (0, 0))
-
-    # Update the camera position to create the drifting effect
-    camera_x += camera_speed  # Adjust this value to control the speed of drift
-    camera_y += camera_speed
 
     # Display the background
     pygame.display.update()
