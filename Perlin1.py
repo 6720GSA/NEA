@@ -69,13 +69,11 @@ def generate_permutation():
     return p
 
 # Function to generate Perlin noise map
-def generate_perlin_noise(width, height, scale, permutation, camera_x, camera_y):
+def generate_perlin_noise(width, height, scale, permutation):
     noise_map = pygame.Surface((width, height))  # Create a surface for the noise map
     for y in range(height):
         for x in range(width):
-            nx = (x + camera_x) / scale
-            ny = (y + camera_y) / scale
-            noise_value = perlin(nx, ny, permutation)
+            noise_value = perlin(width/2, height/2, permutation)
             noise_value = (noise_value + 1) / 2  # Scale to the range [0, 1]
             noise_value = min(1, max(0, noise_value))  # Clamp between 0 and 1
 
